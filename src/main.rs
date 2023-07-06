@@ -21,6 +21,9 @@ async fn main() {
 
         let are_we_throttled = SystemTime::now();
         let res = send_request(url.as_str()).await;
+        if are_we_throttled.elapsed().unwrap().as_millis() > 200 {
+            println!("Slow...");
+        }
         if are_we_throttled.elapsed().unwrap().as_millis() > 300 {
             println!("Throttled...");
         }
