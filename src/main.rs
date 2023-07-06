@@ -18,10 +18,12 @@ async fn main() {
 
 
     loop {
-        // println!("waiting...");
-        // thread::sleep(Duration::new(2,0));
 
+        let are_we_throttled = SystemTime::now();
         let res = send_request(url.as_str()).await;
+        if are_we_throttled.elapsed().unwrap().as_millis() > 300 {
+            println!("Throttled...");
+        }
         count += 1;
         println!("{}, Time elapsed: {}, Requests sent: {}", res, now.elapsed().unwrap().as_secs(), count);
 
