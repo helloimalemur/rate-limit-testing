@@ -11,10 +11,11 @@ async fn main() {
 
     // get arguments
     let url = String::from(args.get(1).unwrap());
+    let delay = str::parse::<u64>(args.get(2).unwrap()).unwrap();
 
     // let now = chrono::Local::now();
     let now = SystemTime::now();
-    let mut count = 0;
+    let mut count: u64 = 0;
 
 
 
@@ -38,6 +39,7 @@ async fn main() {
             println!("Requests blocked after: {}ms", count);
             break
         }
+        thread::sleep(Duration::new(delay, 0));
     }
 
 
