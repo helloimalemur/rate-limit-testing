@@ -1,5 +1,6 @@
 # rate-limit-testing
 
 ```$ rate-limit-testing <url> <delay-between-requests>```
-example;
+
+### example;
 ```$ cargo run -- https://koonts.net/ 0```
