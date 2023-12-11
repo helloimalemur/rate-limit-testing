@@ -1,6 +1,8 @@
 # rate-limit-testing
 
 ```$ rate-limit-testing <url> <delay-between-requests>```
+#### A delay greater than 100 will be assumed to be in milliseconds
+#### Delay less than 100 will be assumed as seconds
 
 ### example;
 ```$ cargo run -- https://koonts.net/ 0```
