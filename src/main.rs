@@ -54,6 +54,7 @@ async fn main() {
 }
 
 async fn send_request(url: &str) -> String {
-    println!("URL: {}", url);
-    reqwest::get(url).await.unwrap().status().to_string()
+    let req = reqwest::get(url).await;
+    println!("{:?}", req);
+    req.unwrap().status().to_string()
 }
