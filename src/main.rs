@@ -1,11 +1,10 @@
 // cargo run -- https://www.cloudflare.com/rate-limit-test/
 
+use std::sync::{mpsc, Arc, Mutex};
 use std::time::*;
 use std::{env, thread};
-use reqwest::StatusCode;
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let args: Vec<String> = env::args().collect();
 
     let mut running: bool = true;
@@ -16,54 +15,75 @@ async fn main() {
 
     // let now = chrono::Local::now();
     let now = SystemTime::now();
-    let mut count: u64 = 0;
+    let count: Arc<Mutex<u64>> = Arc::new(Mutex::new(0));
+
+    let (tx, rx) = mpsc::channel();
 
     loop {
-        let are_we_throttled = SystemTime::now();
-        let res = send_request(url.as_str()).await;
-        if are_we_throttled.elapsed().unwrap().as_millis() > 300
-            && are_we_throttled.elapsed().unwrap().as_millis() < 826
-        {
-            println!(
-                "Slow... {}ms",
-                are_we_throttled.elapsed().unwrap().as_millis()
-            );
-        }
-        if are_we_throttled.elapsed().unwrap().as_millis() > 826 {
-            println!(
-                "Throttled... {}ms",
-                are_we_throttled.elapsed().unwrap().as_millis()
-            );
-        }
-        count += 1;
-        println!(
-            "{}, Time elapsed: {}, Requests sent: {}",
-            res,
-            now.elapsed().unwrap().as_secs(),
-            count
-        );
+        let ctx = tx.clone();
+        let burl = url.clone();
+        let b_count = count.clone();
+        thread::spawn(move || {
+            let mut n_count = b_count.lock().unwrap();
+            *n_count += 1;
+            let cur_count = *n_count;
 
-        if !res.contains("200") {
-            running = false;
+            let are_we_throttled = SystemTime::now();
+            let res = send_request(burl.as_str());
+            if are_we_throttled.elapsed().unwrap().as_millis() > 300
+                && are_we_throttled.elapsed().unwrap().as_millis() < 826
+            {
+                println!(
+                    "Slow... {}ms",
+                    are_we_throttled.elapsed().unwrap().as_millis()
+                );
+            }
+            if are_we_throttled.elapsed().unwrap().as_millis() > 826 {
+                println!(
+                    "Throttled... {}ms",
+                    are_we_throttled.elapsed().unwrap().as_millis()
+                );
+            }
+
+            let msg = format!(
+                "{}, Time elapsed: {}, Requests sent: {}",
+                res,
+                now.elapsed().unwrap().as_secs(),
+                cur_count
+            );
+            ctx.send(msg).unwrap();
+
+            if !res.contains("200") {
+                running = false;
+            }
+
+            if !running {
+                println!("Requests blocked after: {}ms", cur_count);
+            }
+        });
+
+        if delay > 100 {
+            thread::sleep(Duration::new(0, delay as u32 * 1_000_000));
+        } else {
+            thread::sleep(Duration::new(delay, 0));
         }
-        if !running {
-            println!("Requests blocked after: {}ms", count);
-            break;
-        }
-        thread::sleep(Duration::new(delay, 0));
+
+        let rc = rx.recv().unwrap();
+        println!("{}", rc);
     }
 }
 
-async fn send_request(url: &str) -> String {
-    let req = reqwest::get(url).await;
+fn send_request(url: &str) -> String {
+    let req = reqwest::blocking::get(url);
     // println!("{:?}", req);
     // req.unwrap().status().to_string()
-    if req.is_err() {
+    // if req.is_err() {
+    if let Ok(req) = req {
+        req.status().to_string()
+    } else {
         match req.err().unwrap().status() {
             None => "Request Failed".to_string(),
-            Some(status) => status.to_string()
+            Some(status) => status.to_string(),
         }
-    } else {
-        req.unwrap().status().to_string()
     }
 }
