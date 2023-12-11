@@ -1,9 +1,8 @@
 // cargo run -- https://www.cloudflare.com/rate-limit-test/
 
+use std::sync::{mpsc, Arc, Mutex};
 use std::time::*;
 use std::{env, thread};
-use std::sync::{Arc, mpsc, Mutex};
-use reqwest::StatusCode;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -78,12 +77,13 @@ fn send_request(url: &str) -> String {
     let req = reqwest::blocking::get(url);
     // println!("{:?}", req);
     // req.unwrap().status().to_string()
-    if req.is_err() {
+    // if req.is_err() {
+    if let Ok(req) = req {
+        req.status().to_string()
+    } else {
         match req.err().unwrap().status() {
             None => "Request Failed".to_string(),
-            Some(status) => status.to_string()
+            Some(status) => status.to_string(),
         }
-    } else {
-        req.unwrap().status().to_string()
     }
 }
