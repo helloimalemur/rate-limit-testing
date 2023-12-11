@@ -2,6 +2,7 @@
 
 use std::time::*;
 use std::{env, thread};
+use reqwest::StatusCode;
 
 #[tokio::main]
 async fn main() {
@@ -55,6 +56,14 @@ async fn main() {
 
 async fn send_request(url: &str) -> String {
     let req = reqwest::get(url).await;
-    println!("{:?}", req);
-    req.unwrap().status().to_string()
+    // println!("{:?}", req);
+    // req.unwrap().status().to_string()
+    if req.is_err() {
+        match req.err().unwrap().status() {
+            None => "Request Failed".to_string(),
+            Some(status) => status.to_string()
+        }
+    } else {
+        req.unwrap().status().to_string()
+    }
 }
