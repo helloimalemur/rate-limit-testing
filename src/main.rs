@@ -1,7 +1,7 @@
 // cargo run -- https://www.cloudflare.com/rate-limit-test/
 
-use std::{env, thread};
 use std::time::*;
+use std::{env, thread};
 
 #[tokio::main]
 async fn main() {
@@ -17,34 +17,41 @@ async fn main() {
     let now = SystemTime::now();
     let mut count: u64 = 0;
 
-
-
     loop {
-
         let are_we_throttled = SystemTime::now();
         let res = send_request(url.as_str()).await;
-        if are_we_throttled.elapsed().unwrap().as_millis() > 300 && are_we_throttled.elapsed().unwrap().as_millis() < 826 {
-            println!("Slow... {}ms", are_we_throttled.elapsed().unwrap().as_millis());
+        if are_we_throttled.elapsed().unwrap().as_millis() > 300
+            && are_we_throttled.elapsed().unwrap().as_millis() < 826
+        {
+            println!(
+                "Slow... {}ms",
+                are_we_throttled.elapsed().unwrap().as_millis()
+            );
         }
         if are_we_throttled.elapsed().unwrap().as_millis() > 826 {
-            println!("Throttled... {}ms", are_we_throttled.elapsed().unwrap().as_millis());
+            println!(
+                "Throttled... {}ms",
+                are_we_throttled.elapsed().unwrap().as_millis()
+            );
         }
         count += 1;
-        println!("{}, Time elapsed: {}, Requests sent: {}", res, now.elapsed().unwrap().as_secs(), count);
+        println!(
+            "{}, Time elapsed: {}, Requests sent: {}",
+            res,
+            now.elapsed().unwrap().as_secs(),
+            count
+        );
 
         if !res.contains("200") {
             running = false;
         }
         if !running {
             println!("Requests blocked after: {}ms", count);
-            break
+            break;
         }
         thread::sleep(Duration::new(delay, 0));
     }
-
-
 }
-
 
 async fn send_request(url: &str) -> String {
     reqwest::get(url).await.unwrap().status().to_string()
