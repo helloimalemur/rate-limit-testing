@@ -30,7 +30,7 @@ fn main() {
 
             let are_we_throttled = SystemTime::now();
             let res = send_request(burl.as_str());
-            if are_we_throttled.elapsed().unwrap().as_millis() > 300
+            if are_we_throttled.elapsed().unwrap().as_millis() > 500
                 && are_we_throttled.elapsed().unwrap().as_millis() < 826
             {
                 println!(
