@@ -1,17 +1,22 @@
 // cargo run -- https://www.cloudflare.com/rate-limit-test/
 
+mod options;
+
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::*;
 use std::{env, thread};
+use clap::Parser;
+use crate::options::Cli;
+
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let arguments = Cli::parse();
 
     let mut running: bool = true;
 
     // get arguments
-    let url = String::from(args.get(1).unwrap());
-    let delay = str::parse::<u64>(args.get(2).unwrap()).unwrap();
+    let url = arguments.url;
+    let delay = arguments.delay;
 
     // let now = chrono::Local::now();
     let now = SystemTime::now();
