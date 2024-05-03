@@ -1,6 +1,7 @@
 [package]
 name = "rate-limit-testing"
-version = "0.1.1"
+version = "0.1.2
+"
 edition = "2021"
 description = "Intended to be used for testing rate-limiting"
 authors = ["james@koonts.net"]
