@@ -1,20 +1,17 @@
-// cargo run -- https://www.cloudflare.com/rate-limit-test/
-
 mod options;
 
-use std::sync::{mpsc, Arc, Mutex};
-use std::time::*;
-use std::{env, thread};
-use clap::Parser;
 use crate::options::Cli;
-
+use clap::Parser;
+use std::sync::{mpsc, Arc, Mutex};
+use std::thread;
+use std::time::*;
 
 fn main() {
     let arguments = Cli::parse();
 
     let mut running: bool = true;
-    let mut method= "get".to_string();
-    let mut post_d= String::new();
+    let mut method = "get".to_string();
+    let mut post_d = String::new();
     // get arguments
     let url = arguments.url;
     let delay = arguments.delay;
@@ -43,7 +40,7 @@ fn main() {
             let cur_count = *n_count;
 
             let are_we_throttled = SystemTime::now();
-            let res = send_request(burl.as_str().clone(), b_method, b_post_d);
+            let res = send_request(burl.as_str(), b_method, b_post_d);
             if are_we_throttled.elapsed().unwrap().as_millis() > 500
                 && are_we_throttled.elapsed().unwrap().as_millis() < 826
             {
@@ -87,39 +84,34 @@ fn main() {
     }
 }
 
+macro_rules! get_status {
+    ($a:expr) => {
+        if let Ok(req) = $a {
+            req.status().to_string()
+        } else {
+            match $a.err().unwrap().status() {
+                None => "Request Failed".to_string(),
+                Some(status) => status.to_string(),
+            }
+        }
+    };
+}
+
 fn send_request(url: &str, method: String, post_data: String) -> String {
     match method.as_str() {
         "post" => {
             let client = reqwest::Client::new();
             let tk = tokio::runtime::Runtime::new();
-            let req = tk.unwrap().block_on(client.post(url)
-                .body(post_data)
-                .send());
-            // println!("{:?}", req);
-            // req.unwrap().status().to_string()
-            // if req.is_err() {
-            if let Ok(req) = req {
-                req.status().to_string()
-            } else {
-                return match req.err().unwrap().status() {
-                    None => "Request Failed".to_string(),
-                    Some(status) => status.to_string(),
-                }
-            }
+            let req = tk
+                .unwrap()
+                .block_on(client.post(url).body(post_data).send());
+
+            get_status!(req)
         }
         &_ => {
             let req = reqwest::blocking::get(url);
-            // println!("{:?}", req);
-            // req.unwrap().status().to_string()
-            // if req.is_err() {
-            if let Ok(req) = req {
-                req.status().to_string()
-            } else {
-                return match req.err().unwrap().status() {
-                    None => "Request Failed".to_string(),
-                    Some(status) => status.to_string(),
-                }
-            }
+
+            get_status!(req)
         }
     }
 }

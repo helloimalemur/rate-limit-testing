@@ -7,5 +7,5 @@ pub struct Cli {
     #[arg(short)]
     pub delay: u64,
     #[arg(short)]
-    pub post_data: Option<String>
+    pub post_data: Option<String>,
 }
