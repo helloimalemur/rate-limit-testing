@@ -1,5 +1,10 @@
 # rate-limit-testing
 
+## Install
+```shell
+cargo install rate-limit-testing
+```
+
 ```$ rate-limit-testing -u <url> -d <delay-between-requests>```
 #### A delay greater than 100 will be assumed to be in milliseconds
 #### Delay less than 100 will be assumed as seconds
