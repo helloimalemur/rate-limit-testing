@@ -14,6 +14,13 @@ $ rate-limit-testing -u <url> -d <delay-between-requests>
 ```shell
 $ rate-limit-testing -u <url> -d <delay-between-requests> -p "the body"
 ```
+
+### Headers
+```shell
+$ rate-limit-testing -u <url> -d <delay-between-requests> -p "the body" -a "HEADER1: value, HEADER2: value"
+```
+
+
 ## Note;
 #### A delay greater than 100 will be assumed to be in milliseconds
 #### Delay less than 100 will be assumed as seconds
