@@ -113,7 +113,7 @@ fn send_request(url: &str, method: String, post_data: String, header_d: Vec<Stri
             let split = e.split(':').map(|a| {a.trim().to_string()}).collect::<Vec<String>>();
             let _ = headers.try_append(HeaderName::from_bytes(split.get(0).unwrap().as_bytes()).unwrap(), HeaderValue::from_bytes(split.get(1).unwrap().as_bytes()).unwrap());
         });
-        println!("{:?}", headers);
+        // println!("{:?}", headers);
     }
     match method.as_str() {
         "post" => {
