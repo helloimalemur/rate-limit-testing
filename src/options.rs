@@ -8,4 +8,6 @@ pub struct Cli {
     pub delay: u64,
     #[arg(short)]
     pub post_data: Option<String>,
+    #[arg(short)]
+    pub array_headers: Option<String>,
 }
