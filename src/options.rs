@@ -10,4 +10,6 @@ pub struct Cli {
     pub post_data: Option<String>,
     #[arg(short)]
     pub array_headers: Option<String>,
+    #[arg(short)]
+    pub method: Option<String>,
 }

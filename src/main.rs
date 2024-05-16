@@ -19,9 +19,9 @@ fn main() {
     let delay = arguments.delay;
     let post_data = arguments.post_data;
     let header_data = arguments.array_headers;
+    let method_data = arguments.method;
 
     if let Some(post_data) = post_data {
-        method = "post".to_string();
         post_d = post_data
     }
 
@@ -29,6 +29,11 @@ fn main() {
         let a = headers.split(',').map(|e| {e.to_string()}).collect::<Vec<String>>();
         header_d.clone_from(&a);
     }
+
+    if let Some(method_d) = method_data {
+        method = method_d;
+    }
+
 
     // let now = chrono::Local::now();
     let now = SystemTime::now();
@@ -117,30 +122,39 @@ fn send_request(url: &str, method: String, post_data: String, header_d: Vec<Stri
     }
     match method.as_str() {
         "post" => {
+            println!("Sending POST:");
             let client = reqwest::Client::new();
             let tk = tokio::runtime::Runtime::new();
-            let req = tk
-                .unwrap()
+            let req = tk.unwrap()
                 .block_on(
                     client.post(url)
                         .headers(headers)
-                        .body(post_data).send()
+                        .send()
                 );
-
             get_status!(req)
         }
-        &_ => {
-            // let req = reqwest::blocking::get(url);
+        "get" => {
+            println!("Sending GET:");
             let client = reqwest::Client::new();
             let tk = tokio::runtime::Runtime::new();
-            let req = tk
-                .unwrap()
+            let req = tk.unwrap()
                 .block_on(
                     client.get(url)
                         .headers(headers)
                         .send()
                 );
-
+            get_status!(req)
+        }
+        &_ => {
+            println!("Sending GET:");
+            let client = reqwest::Client::new();
+            let tk = tokio::runtime::Runtime::new();
+            let req = tk.unwrap()
+                .block_on(
+                    client.get(url)
+                        .headers(headers)
+                        .send()
+                );
             get_status!(req)
         }
     }
