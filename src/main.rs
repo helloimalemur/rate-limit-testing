@@ -3,9 +3,34 @@ mod options;
 use crate::options::Cli;
 use clap::Parser;
 use std::sync::{mpsc, Arc, Mutex};
+use std::sync::mpsc::Sender;
 use std::thread;
 use std::time::*;
 use reqwest::header::{HeaderName, HeaderValue};
+
+macro_rules! thread_func {
+    ($a:expr, $sm:expr, $def_par:expr) => {
+        let mut handles = vec![];
+        for _i in 0..$def_par {
+            let sm = $sm.clone();
+            let tk = tokio::runtime::Runtime::new();
+            let handle = thread::spawn(move || tk.unwrap().block_on($a(sm)));
+            handles.push(handle);
+            // let _ = tokio::time::sleep(Duration::new(0, 200000000)).await;
+            // let _ = tokio::time::sleep(Duration::new(1, 0)).await;
+            // let _ = tokio::time::sleep(Duration::new(2, 0)).await;
+        }
+
+        // let _ = tokio::time::sleep(Duration::new(2, 0)).await;
+
+        for handle in handles {
+            // handle.join().unwrap()
+            if let Err(_) = handle.join() {
+                println!("WARNING: could not join on handle")
+            }
+        }
+    };
+}
 
 fn main() {
     let arguments = Cli::parse();
@@ -39,22 +64,30 @@ fn main() {
     let now = SystemTime::now();
     let count: Arc<Mutex<u64>> = Arc::new(Mutex::new(0));
 
-    let (tx, rx) = mpsc::channel();
 
+
+    let burl = url.clone();
+    let b_count = count.clone();
+    let b_method = method.clone();
+    let b_post_d = post_d.clone();
+    let b_header_d = header_d.clone();
+
+    start_loop(burl, b_count, b_method, b_post_d, b_header_d, now, running, delay)
+}
+
+fn start_loop(burl: String, b_count: Arc<Mutex<u64>>, b_method: String, b_post_d: String, b_header_d: Vec<String>, now: SystemTime, run: bool, delay: u64) {
+    let (tx, rx) = mpsc::channel();
+    let mut running = run;
     loop {
+
         let ctx = tx.clone();
-        let burl = url.clone();
-        let b_count = count.clone();
-        let b_method = method.clone();
-        let b_post_d = post_d.clone();
-        let b_header_d = header_d.clone();
         thread::spawn(move || {
             let mut n_count = b_count.lock().unwrap();
             *n_count += 1;
             let cur_count = *n_count;
 
             let are_we_throttled = SystemTime::now();
-            let res = send_request(burl.as_str(), b_method, b_post_d, b_header_d);
+            let res = send_request(burl.as_str(), b_method.clone(), b_post_d.clone(), b_header_d.clone());
             if are_we_throttled.elapsed().unwrap().as_millis() > 500
                 && are_we_throttled.elapsed().unwrap().as_millis() < 826
             {
