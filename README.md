@@ -5,6 +5,18 @@
 $ cargo install rate-limit-testing
 ```
 
+```aiignore
+Usage: rate-limit-testing [OPTIONS] -u <URL> -d <DELAY>
+
+Options:
+  -u <URL>                
+  -d <DELAY>              
+  -p <POST_DATA>          
+  -a <ARRAY_HEADERS>      
+  -m <METHOD>             
+  -h, --help              Print help
+```
+
 ### GET request
 ```shell
 $ rate-limit-testing -u <url> -d <delay-between-requests>
